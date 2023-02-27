@@ -1,6 +1,7 @@
 # GraphBib
 GraphBib permet de visualiser des données issues du web de données sous forme de graphe et de mettre en évidence les alignements possibles.  
 Les requêtes dont faites sur des points de terminaison SPARQL (data.bnf, dbpedia et Europeana).  
+Le typage des entités est en adéquation avec l'ontologie IFLA-LRM.
 
 ![Nom de l'image](Capture.png)
   
