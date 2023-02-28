@@ -1,7 +1,7 @@
 # GraphBib
 GraphBib permet de visualiser des données issues du web de données sous forme de graphe et de mettre en évidence les alignements.  
 Les requêtes sont faites sur des points de terminaison SPARQL (data.bnf, dbpedia et Europeana).  
-Le typage des entités est accentué en adéquation avec l'ontologie IFLA-LRM.
+Le typage des entités est accentué en correpondance avec l'ontologie IFLA-LRM.
 
 ![Nom de l'image](assets/Capture.png)
   
@@ -9,4 +9,5 @@ Le typage des entités est accentué en adéquation avec l'ontologie IFLA-LRM.
   Cliquer sur le bouton *Envoyer* pour lancer la requête.  
   Double-cliquer sur un noeud pour mettre le graphe à jour à partir de l'entité concernée.  
   Contrôler le zoom avec la molette de la souris.  
-  Cliquer et Glisser pour déplacer.
+  Cliquer et Glisser pour déplacer.  
+  Lors du survol d'un noeud, un popup donne des informations sur le type lié à l'URI concernée, ainsi que le triplet RDF associé.

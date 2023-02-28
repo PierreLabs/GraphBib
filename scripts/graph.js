@@ -611,7 +611,7 @@
                 type.indexOf("Elements/formOfWork") > -1 ||
                 (type.indexOf("dc/dcmitype/") > -1 && type.indexOf("Event") < 0)
             ) {
-                return { couleur: "#fcc1fb", label: type.substring(type.lastIndexOf("/") + 1), type: type.substring(type.lastIndexOf("/") + 1) };
+                return { couleur: "#fcc1fb", label: type.substring(type.lastIndexOf("/") + 1), type: "Genre/Forme" };
             }
             //Expression
             if (type.indexOf("Expression") > -1 ||
