@@ -55,7 +55,7 @@
         if (option.value != "") {
             endpointGroups[option.value] = String.fromCharCode(65 + i);
             let coulOption = coulGroupe(endpointGroups[option.value]);
-            option.style.color = coulOption;
+            option.style.color = coulOption; //La couleur associée au point de terminaison sélectionné.
             option.style.fontWeight = "bold";
         }
     }
@@ -70,7 +70,7 @@
         const uriVal = $("#uri").val();
         this.style.borderStyle = "solid";
         this.style.borderWidth = "4px";
-        this.style.borderColor = coulOption;
+        this.style.borderColor = coulOption; //La couleur associée au point de terminaison sélectionné.
         //URI "exemple" à utiliser avec data.bnf (Paris)
         if (!uriVal.length && selectedValue.indexOf("data.bnf") > -1) {
             $("#uri").val("http://data.bnf.fr/ark:/12148/cb152821567")
@@ -157,18 +157,17 @@
                 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
                 PREFIX dc: <http://purl.org/dc/elements/1.1/>
                 SELECT DISTINCT * WHERE{
-                {?s ?p1 <${uri}>.
-                    OPTIONAL {?s rdf:type ?type.}
-                    OPTIONAL {?s dc:type ?type.}
-                    OPTIONAL {<${uri}> rdf:type ?uriType.}
-                    OPTIONAL{ ?s foaf:depiction ?depic.}}
-                 UNION 
                 {<${uri}> ?p2 ?o.
-                    OPTIONAL {?o rdf:type ?type.}
-                    OPTIONAL {?o dc:type ?type.}
-                    OPTIONAL {<${uri}> rdf:type ?uriType.}
-                    OPTIONAL{ ?o foaf:depiction ?depic.}}
-                    FILTER (!exists{?s owl:SameAs ?o})
+                OPTIONAL {?o rdf:type ?type.}
+                OPTIONAL {?o dc:type ?type.}
+                OPTIONAL {<${uri}> rdf:type ?uriType.}
+                OPTIONAL{ ?o foaf:depiction ?depic.}}
+                 UNION 
+                {?s ?p1 <${uri}>.
+                OPTIONAL {?s rdf:type ?type.}
+                OPTIONAL {?s dc:type ?type.}
+                OPTIONAL{ ?s foaf:depiction ?depic.}}
+                 FILTER (!exists{?s owl:SameAs ?o})
                 }
                 ORDER BY RAND()
                 LIMIT 100`;

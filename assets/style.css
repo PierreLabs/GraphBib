@@ -1,0 +1,101 @@
+.bg-dark {
+    background-color: #464858 !important;
+}
+
+.position-relative {
+    position: relative;
+}
+
+.position-relative .copyright {
+    position: absolute;
+    bottom: 0;
+    right: 60px;
+    padding: 10px;
+    margin-bottom: 10px;
+    color: #000;
+    font-size: 12px;
+    font-weight: bold;
+    ;
+    background-color: #999;
+}
+
+.position-relative .logoGH {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    padding: 10px;
+    margin-bottom: 5px;
+}
+
+.page-header .col-8 {
+    display: flex;
+    align-items: center;
+}
+
+h1 {
+    margin-top: 25px;
+}
+
+h3 {
+    margin-top: 20px;
+}
+
+.logo-container {
+    position: relative;
+    display: inline-block;
+}
+
+.loader-svg {
+    animation: spin 2s linear infinite;
+    animation-play-state: paused;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+#envoi {
+    background-color: #546192;
+    color: #fff;
+    font-weight: bold;
+}
+
+#legende-container {
+    margin: 0.5rem 0;
+}
+
+.legende-item {
+    padding: 0.5rem;
+    margin-left: 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid #555;
+    font-size: 0.9rem;
+}
+
+select:focus {
+    outline: none;
+    border: 2px solid #007bff;
+    box-shadow: 0 0 5px #007bff;
+}
+
+select option.group1 {
+    background-color: red;
+    font-weight: bold;
+}
+
+#selectPterm {
+    width: 50%;
+}
+
+.tooltip {
+    position: absolute;
+    text-align: center;
+    padding: 0.5rem;
+    font-size: 0.9rem;
+    background-color: #555;
+    color: #fff;
+    pointer-events: none;
+    line-height: 2rem;
+}
