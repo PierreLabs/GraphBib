@@ -64,6 +64,7 @@
     //lors du changement d'option.
     const selectPterm = document.getElementById('selectPterm');
     selectPterm.addEventListener('change', function() {
+        $("#selectPterm").css("background-color", "");
         const selectedOption = this.options[this.selectedIndex];
         const selectedValue = selectedOption.value;
         const coulOption = coulGroupe(endpointGroups[selectedValue]);
@@ -71,23 +72,38 @@
         this.style.borderStyle = "solid";
         this.style.borderWidth = "4px";
         this.style.borderColor = coulOption; //La couleur associée au point de terminaison sélectionné.
-        //URI "exemple" à utiliser avec data.bnf (Paris)
+
         if (!uriVal.length && selectedValue.indexOf("data.bnf") > -1) {
+            //URI "exemple" à utiliser avec data.bnf (Paris)
             $("#uri").val("http://data.bnf.fr/ark:/12148/cb152821567")
         }
-        //URI "exemple" à utiliser avec dbpedia (J.S. Bach)
-        if (!uriVal.length && selectedValue.indexOf("dbpedia") > -1) {
-            $("#uri").val("https://fr.dbpedia.org/resource/Jean-Sébastien_Bach")
+        if (selectedValue.indexOf("dbpedia") > -1) {
+            //Mettre la couleur d'arrière plan (associée au point de terminaison) sur le select.
+            const opacite = 0.5;
+            const r = parseInt(coulOption.substring(1, 3), 16);
+            const g = parseInt(coulOption.substring(3, 5), 16);
+            const b = parseInt(coulOption.substring(5, 7), 16);
+            const couleurAvecOpacite = `rgba(${r}, ${g}, ${b}, ${opacite})`;
+            $("#selectPterm").css("background-color", couleurAvecOpacite);
+            if (!uriVal.length) //URI "exemple" à utiliser avec dbpedia (J.S. Bach)
+                $("#uri").val("https://fr.dbpedia.org/resource/Jean-Sébastien_Bach")
         }
-        //URI "exemple" à utiliser avec europeana (Pierre Corneille)
-        if (!uriVal.length && selectedValue.indexOf("europeana") > -1) {
-            $("#uri").val("http://dbpedia.org/resource/Pierre_Corneille")
+        if (selectedValue.indexOf("europeana") > -1) {
+            //Mettre la couleur d'arrière plan (associée au point de terminaison) sur le select.
+            const opacite = 0.5;
+            const r = parseInt(coulOption.substring(1, 3), 16);
+            const g = parseInt(coulOption.substring(3, 5), 16);
+            const b = parseInt(coulOption.substring(5, 7), 16);
+            const couleurAvecOpacite = `rgba(${r}, ${g}, ${b}, ${opacite})`;
+            $("#selectPterm").css("background-color", couleurAvecOpacite);
+            if (!uriVal.length) //URI "exemple" à utiliser avec europeana (Pierre Corneille)
+                $("#uri").val("http://dbpedia.org/resource/Pierre_Corneille")
         }
     });
 
     $("#envoi").on("click", function() {
         if (isUpdating) {
-            return; // ignorer pendant la mise à jour du graphe
+            return; //ignorer pendant la mise à jour du graphe
         }
         //Pas de https dans les URIs
         $("#uri").val($("#uri").val().replace("https", "http"));
@@ -259,8 +275,8 @@
             let typeO = objet !== uri && typeof element.type !== "undefined" ? element.type.value : objet;
             let typeS = sujet !== uri && typeof element.type !== "undefined" ? element.type.value : sujet;
 
-            let coulTypeS = getColorType(typeS);
-            let coulTypeO = getColorType(typeO);
+            let coulTypeS = getColorType(typeS, selectedEndpt);
+            let coulTypeO = getColorType(typeO, selectedEndpt);
 
 
             let bColorS = coulTypeS.couleur;
@@ -277,7 +293,7 @@
 
             if (c === 0) { //Première itération, on traite l'URI
                 let uriType = typeof element.uriType === "undefined" ? "pas de type" : element.uriType.value
-                let coulTypeURI = getColorType(uriType)
+                let coulTypeURI = getColorType(uriType, endPt)
                 nodes.push({
                     modelType: coulTypeURI.type,
                     label: coulTypeURI.label,
@@ -400,7 +416,25 @@
             const nodeEnter = node.enter()
                 .append("circle")
                 .attr("r", d => 18)
-                .attr("fill", d => d.couleur)
+                .attr("fill", d => {
+                    if (d.group === "B") {
+                        //Si la source est la BnF (2ème option), on renvoie la couleur associée selon la correspondance IFLA-LRM
+                        return d.couleur
+                    } else {
+                        //Sinon, on met la couleur du groupe (endpoint) à 50% et on renvoie cette couleur
+                        const couleur = coulGroupe(d.group);
+                        const opacite = 0.5;
+
+                        // Convertir la valeur hexadécimale en valeurs RVB
+                        const r = parseInt(couleur.substring(1, 3), 16);
+                        const g = parseInt(couleur.substring(3, 5), 16);
+                        const b = parseInt(couleur.substring(5, 7), 16);
+
+                        // Renvoyer la couleur avec une opacité de 0.5
+                        const couleurAvecOpacite = `rgba(${r}, ${g}, ${b}, ${opacite})`;
+                        return couleurAvecOpacite;
+                    }
+                })
                 .attr("pointer-events", "all")
                 .attr("stroke", d => coulGroupe(d.group))
                 .attr("stroke-width", "3")
@@ -595,144 +629,155 @@
 
         //Couleur en fonction du type d'entité.
         //Les couleurs sont choisies pour être en adéquation avec les choix faits par la Transition Bibliographique
-        function getColorType(type) {
-            //Nomen
-            if (
-                type.indexOf("#P61160") > -1 ||
-                type.indexOf("#P30176") > -1 ||
-                type.indexOf("publishersName") > -1 ||
-                type.indexOf("foaf/0.1/name") > -1 ||
-                type.indexOf("foaf/0.1/givenName") > -1 ||
-                type.indexOf("foaf/0.1/familyName") > -1) {
-                return { couleur: "#cbbba1", label: "Nomen", type: "Nomen" };
-            }
-            if ( //Genre/Forme
-                type.indexOf("vocabulary/work-form") > -1 ||
-                type.indexOf("Elements/formOfWork") > -1 ||
-                (type.indexOf("dc/dcmitype/") > -1 && type.indexOf("Event") < 0)
-            ) {
-                return { couleur: "#fcc1fb", label: type.substring(type.lastIndexOf("/") + 1), type: "Genre/Forme" };
-            }
-            //Expression
-            if (type.indexOf("Expression") > -1 ||
-                type.indexOf("expressionOfWork") > -1 ||
-                type.indexOf("#P30139") > -1 ||
-                type.indexOf("#P10078") > -1 ||
-                type.indexOf("#C10006") > -1) {
-                return { couleur: "#ff9900", label: "Expression", type: "Expression" };
-            }
-            if ( //Concept
-                type.indexOf("/skos/") > -1 ||
-                type.indexOf("#seeAlso") > -1 ||
-                type.indexOf("related") > -1 ||
-                type.indexOf("broader") > -1 ||
-                type.indexOf("closeMatch") > -1 ||
-                type.indexOf("exactMatch") > -1 ||
-                type.indexOf("relatedMatch") > -1 ||
-                type.indexOf("dc/terms/subject") > -1 ||
-                type.indexOf("ontology/bnf-onto/domaine ") > -1 ||
-                type.indexOf("narrower") > -1
-            ) {
-                return { couleur: "#f580f4", label: "Concept", type: "Concept" };
-            }
-            if ( //Work
-                type.indexOf("FRBRentitiesRDA/Work") > -1 ||
-                type.indexOf("rbr/core#term-Work") > -1 ||
-                type.indexOf("#C10001") > -1 ||
-                type.indexOf("bibo/Periodical") > -1 ||
-                type.indexOf("#frbr:Work") > -1 ||
-                type.indexOf("human-music.eu/work") > -1 ||
-                type.indexOf("musicbrainz.org/work") > -1 ||
-                type.indexOf("temp-work") > -1 ||
-                type.indexOf("#P10004") > -1 ||
-                type.indexOf("Work") > -1
-            ) {
-                return { couleur: "#c00000", label: "Oeuvre", type: "Oeuvre" };
-            }
-            if ( //Evénement
-                type.indexOf("Event") > -1 ||
-                type.indexOf("frbr/core#term-Event") > -1 ||
-                type.indexOf("frbr/core#Event") > -1
-            ) {
-                return { couleur: "#937efc", label: "Événement", type: "Événement" };
-            }
-            if ( //Manifestation
-                type.indexOf("FRBRentitiesRDA/Manifestation") > -1 ||
-                type.indexOf("#P30135") > -1 ||
-                type.indexOf("#P30133") > -1 ||
-                type.indexOf("expressionManifested") > -1 ||
-                type.indexOf("workManifested") > -1 ||
-                type.indexOf("#C10007") > -1 ||
-                type.indexOf("#P30016") > -1
-            ) {
-                return { couleur: "#92d050", label: "Manifestation", type: "Manifestation" };
-            }
-            if ( //Laps de temps
-                type.indexOf("owl-time/Instant") > -1 ||
-                type.indexOf("dc/terms/created") > -1 ||
-                type.indexOf("dc/terms/modified") > -1 ||
-                type.indexOf("/date") > -1 ||
-                type.indexOf("isniAttributionDate") > -1 ||
-                type.indexOf("#P30011") > -1 ||
-                type.indexOf("firstYear") > -1 ||
-                type.indexOf("lastYear") > -1 ||
-                type.indexOf("#P10219") > -1 ||
-                type.indexOf("bio/0.1/death") > -1 ||
-                type.indexOf("bio/0.1/birth") > -1 ||
-                type.indexOf("#P50121") > -1 ||
-                type.indexOf("#P50120") > -1
-            ) {
-                return { couleur: "#ffcc66", label: "Laps de temps", type: "Laps de temps" };
-            }
-            if ( //Collectivité
-                type.indexOf("foaf/0.1/#term_Organization") > -1 ||
-                type.indexOf("foaf/0.1/Organization") > -1 ||
-                type.indexOf("isniAttributionAgency") > -1 ||
-                type.indexOf("dc/terms/publisher") > -1 ||
-                type.indexOf("roles/r360") > -1 ||
-                type.indexOf("MusicGroup") > -1 ||
-                type.indexOf("Organisation") > -1
-            ) {
-                return { couleur: "#4394c3", label: "Collectivité", type: "Collectivité" };
-            }
-            if ( //Personne
-                type.indexOf("isni") > -1 ||
-                type.indexOf("Person") > -1 ||
-                type.indexOf("musicbrainz.org/artist") > -1 ||
-                type.indexOf("human-music.eu/person") > -1 ||
-                type.indexOf("authorities") > -1 ||
-                type.indexOf("creator") > -1 ||
-                type.indexOf("roles/r70") > -1 ||
-                type.indexOf("roles/r440") > -1 ||
-                type.indexOf("relators/aut") > -1 ||
-                type.indexOf("NaturalPerson") > -1 ||
-                type.indexOf("Artist") > -1 ||
-                type.indexOf("Agent") > -1
-            ) {
-                return { couleur: "#315fba", label: "Personne", type: "Personne" };
-            }
-            if (type.indexOf("bnf-onto/ExpositionVirtuelle") > -1) { //Exposition
-                return { couleur: "#d2cafc", label: "Exposition" };
-            }
-            if ( //Lieu
-                type.indexOf("/countries") > -1 ||
-                type.indexOf("wgs84_pos") > -1 ||
-                type.indexOf("geonames.org") > -1 ||
-                type.indexOf("data.ign.fr/") > -1 ||
-                type.indexOf("insee.fr") > -1 ||
-                type.indexOf("geonames") > -1 ||
-                type.indexOf("countryAssociatedWithThePerson") > -1 ||
-                type.indexOf("Place") > -1 ||
-                type.indexOf("Country") > -1 ||
-                type.indexOf("Location") > -1 ||
-                type.indexOf("City") > -1 ||
-                type.indexOf("Settlement") > -1 ||
-                type.indexOf("Q486972") > -1 ||
-                type.indexOf("Q3957") > -1 ||
-                type.indexOf("Q6256") > -1
-            ) {
-                return { couleur: "#99a6ae", label: "Lieu", type: "Lieu" };
-            } else { //Si rien ne correspond on renvoie une couleur grise et le dernier élément de l'URI qui peut être précédé de "/", ".", ou "#"
+        function getColorType(type, source) {
+            if (source.indexOf("bnf") > -1) {
+                //Nomen
+                if (
+                    type.indexOf("#P61160") > -1 ||
+                    type.indexOf("#P30176") > -1 ||
+                    type.indexOf("publishersName") > -1 ||
+                    type.indexOf("foaf/0.1/name") > -1 ||
+                    type.indexOf("foaf/0.1/givenName") > -1 ||
+                    type.indexOf("foaf/0.1/familyName") > -1) {
+                    return { couleur: "#cbbba1", label: "Nomen", type: "Nomen" };
+                }
+                if ( //Genre/Forme
+                    type.indexOf("vocabulary/work-form") > -1 ||
+                    type.indexOf("Elements/formOfWork") > -1 ||
+                    (type.indexOf("dc/dcmitype/") > -1 && type.indexOf("Event") < 0)
+                ) {
+                    return { couleur: "#fcc1fb", label: type.substring(type.lastIndexOf("/") + 1), type: "Genre/Forme" };
+                }
+                //Expression
+                if (type.indexOf("Expression") > -1 ||
+                    type.indexOf("expressionOfWork") > -1 ||
+                    type.indexOf("#P30139") > -1 ||
+                    type.indexOf("#P10078") > -1 ||
+                    type.indexOf("#C10006") > -1) {
+                    return { couleur: "#ff9900", label: "Expression", type: "Expression" };
+                }
+                if ( //Concept
+                    type.indexOf("/skos/") > -1 ||
+                    type.indexOf("#seeAlso") > -1 ||
+                    type.indexOf("related") > -1 ||
+                    type.indexOf("broader") > -1 ||
+                    type.indexOf("closeMatch") > -1 ||
+                    type.indexOf("exactMatch") > -1 ||
+                    type.indexOf("relatedMatch") > -1 ||
+                    type.indexOf("dc/terms/subject") > -1 ||
+                    type.indexOf("ontology/bnf-onto/domaine ") > -1 ||
+                    type.indexOf("narrower") > -1
+                ) {
+                    return { couleur: "#f580f4", label: "Concept", type: "Concept" };
+                }
+                if ( //Work
+                    type.indexOf("FRBRentitiesRDA/Work") > -1 ||
+                    type.indexOf("rbr/core#term-Work") > -1 ||
+                    type.indexOf("#C10001") > -1 ||
+                    type.indexOf("bibo/Periodical") > -1 ||
+                    type.indexOf("#frbr:Work") > -1 ||
+                    type.indexOf("human-music.eu/work") > -1 ||
+                    type.indexOf("musicbrainz.org/work") > -1 ||
+                    type.indexOf("temp-work") > -1 ||
+                    type.indexOf("#P10004") > -1 ||
+                    type.indexOf("Work") > -1
+                ) {
+                    return { couleur: "#c00000", label: "Oeuvre", type: "Oeuvre" };
+                }
+                if ( //Evénement
+                    type.indexOf("Event") > -1 ||
+                    type.indexOf("frbr/core#term-Event") > -1 ||
+                    type.indexOf("frbr/core#Event") > -1
+                ) {
+                    return { couleur: "#937efc", label: "Événement", type: "Événement" };
+                }
+                if ( //Manifestation
+                    type.indexOf("FRBRentitiesRDA/Manifestation") > -1 ||
+                    type.indexOf("#P30135") > -1 ||
+                    type.indexOf("#P30133") > -1 ||
+                    type.indexOf("expressionManifested") > -1 ||
+                    type.indexOf("workManifested") > -1 ||
+                    type.indexOf("#C10007") > -1 ||
+                    type.indexOf("#P30016") > -1
+                ) {
+                    return { couleur: "#92d050", label: "Manifestation", type: "Manifestation" };
+                }
+                if ( //Laps de temps
+                    type.indexOf("owl-time/Instant") > -1 ||
+                    type.indexOf("dc/terms/created") > -1 ||
+                    type.indexOf("dc/terms/modified") > -1 ||
+                    type.indexOf("/date") > -1 ||
+                    type.indexOf("isniAttributionDate") > -1 ||
+                    type.indexOf("#P30011") > -1 ||
+                    type.indexOf("firstYear") > -1 ||
+                    type.indexOf("lastYear") > -1 ||
+                    type.indexOf("#P10219") > -1 ||
+                    type.indexOf("bio/0.1/death") > -1 ||
+                    type.indexOf("bio/0.1/birth") > -1 ||
+                    type.indexOf("#P50121") > -1 ||
+                    type.indexOf("#P50120") > -1
+                ) {
+                    return { couleur: "#ffcc66", label: "Laps de temps", type: "Laps de temps" };
+                }
+                if ( //Collectivité
+                    type.indexOf("foaf/0.1/#term_Organization") > -1 ||
+                    type.indexOf("foaf/0.1/Organization") > -1 ||
+                    type.indexOf("isniAttributionAgency") > -1 ||
+                    type.indexOf("dc/terms/publisher") > -1 ||
+                    type.indexOf("roles/r360") > -1 ||
+                    type.indexOf("MusicGroup") > -1 ||
+                    type.indexOf("Organisation") > -1
+                ) {
+                    return { couleur: "#4394c3", label: "Collectivité", type: "Collectivité" };
+                }
+                if ( //Personne
+                    type.indexOf("isni") > -1 ||
+                    type.indexOf("Person") > -1 ||
+                    type.indexOf("musicbrainz.org/artist") > -1 ||
+                    type.indexOf("human-music.eu/person") > -1 ||
+                    type.indexOf("authorities") > -1 ||
+                    type.indexOf("creator") > -1 ||
+                    type.indexOf("roles/r70") > -1 ||
+                    type.indexOf("roles/r440") > -1 ||
+                    type.indexOf("relators/aut") > -1 ||
+                    type.indexOf("NaturalPerson") > -1 ||
+                    type.indexOf("Artist") > -1 ||
+                    type.indexOf("Agent") > -1
+                ) {
+                    return { couleur: "#315fba", label: "Personne", type: "Personne" };
+                }
+                if (type.indexOf("bnf-onto/ExpositionVirtuelle") > -1) { //Exposition
+                    return { couleur: "#d2cafc", label: "Exposition" };
+                }
+                if ( //Lieu
+                    type.indexOf("/countries") > -1 ||
+                    type.indexOf("wgs84_pos") > -1 ||
+                    type.indexOf("geonames.org") > -1 ||
+                    type.indexOf("data.ign.fr/") > -1 ||
+                    type.indexOf("insee.fr") > -1 ||
+                    type.indexOf("geonames") > -1 ||
+                    type.indexOf("countryAssociatedWithThePerson") > -1 ||
+                    type.indexOf("Place") > -1 ||
+                    type.indexOf("Country") > -1 ||
+                    type.indexOf("Location") > -1 ||
+                    type.indexOf("City") > -1 ||
+                    type.indexOf("Settlement") > -1 ||
+                    type.indexOf("Q486972") > -1 ||
+                    type.indexOf("Q3957") > -1 ||
+                    type.indexOf("Q6256") > -1
+                ) {
+                    return { couleur: "#99a6ae", label: "Lieu", type: "Lieu" };
+                } else { //Si rien ne correspond on renvoie une couleur grise et le dernier élément de l'URI qui peut être précédé de "/", ".", ou "#"
+                    var parts = type.split(/[/.#]/); //Divise le type en fonction de "/", "." ou "#"
+                    if (type.endsWith('/')) {
+                        return { couleur: "#dddddd", label: parts[parts.length - 2] + "/".replace(/\/$/, ''), type: "nd" }; //Retourne l'avant-dernier élément avec le "/" final retiré
+                    } else {
+                        return { couleur: "#dddddd", label: parts[parts.length - 1], type: "nd" }; //Retourne le dernier élément de la liste résultante
+                    }
+                }
+            } else { //Si la source n'est pas la BnF, donc si on n'est pas dans l'ontologie LRM,
+                //on renvoie une couleur grise et le dernier élément de l'URI
+                //qui peut être précédé de "/", ".", ou "#"
                 var parts = type.split(/[/.#]/); //Divise le type en fonction de "/", "." ou "#"
                 if (type.endsWith('/')) {
                     return { couleur: "#dddddd", label: parts[parts.length - 2] + "/".replace(/\/$/, ''), type: "nd" }; //Retourne l'avant-dernier élément avec le "/" final retiré
@@ -740,6 +785,7 @@
                     return { couleur: "#dddddd", label: parts[parts.length - 1], type: "nd" }; //Retourne le dernier élément de la liste résultante
                 }
             }
+
         }
 
         //Fonction renvoyant une couleur adéquate pour le texte (noir ou blanc) en fonction de la couleur d'arrière plan afin d'obtenir un contraste suffisant.
