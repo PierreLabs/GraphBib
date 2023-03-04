@@ -105,9 +105,11 @@
         if (isUpdating) {
             return; //ignorer pendant la mise à jour du graphe
         }
-        //Pas de https dans les URIs
-        $("#uri").val($("#uri").val().replace("https", "http"));
         let uri = $("#uri").val();
+        //Pas de https dans les URIs "data bnf" ou "dbpedia"
+        if (uri.indexOf("data.bnf.fr/ark:") > -1 || uri.indexOf("fr.dbpedia.org") > -1)
+        //Si c'est le cas, remplace https par http
+            uri = uri.replace("https", "http");
         if (nodes.length) { //Si le tableau des noeuds n'est pas vide (pas la première requête)
             sparqlData(uri); //update
             return false;
@@ -133,9 +135,9 @@
                     .forceLink()
                     .id(d => d.uri)
                     .distance(function() {
-                        return 100;
+                        return 150;
                     })
-                    .strength(0.9)
+                    .strength(0.8)
                 )
                 .alphaTarget(0.05);
 
@@ -168,29 +170,29 @@
         if (selectedEndpt.indexOf("Sélectionner") < 0 && $("#uri").val().trim().length) {
             //Requête SPARQL
             const Query =
-                `PREFIX owl: <http://www.w3.org/2002/07/owl#>
+                `
+                PREFIX owl: <http://www.w3.org/2002/07/owl#>
                 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
                 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
                 PREFIX dc: <http://purl.org/dc/elements/1.1/>
                 SELECT DISTINCT * WHERE{
-                {<${uri}> ?p2 ?o.
+                { <${uri}> ?p2 ?o.                
                 OPTIONAL {?o rdf:type ?type.}
                 OPTIONAL {?o dc:type ?type.}
                 OPTIONAL {<${uri}> rdf:type ?uriType.}
                 OPTIONAL{ ?o foaf:depiction ?depic.}}
-                 UNION 
-                {?s ?p1 <${uri}>.
+                UNION 
+                { ?s ?p1 <${uri}>.
                 OPTIONAL {?s rdf:type ?type.}
                 OPTIONAL {?s dc:type ?type.}
+                OPTIONAL {<${uri}> rdf:type ?uriType.}
                 OPTIONAL{ ?s foaf:depiction ?depic.}}
-                 FILTER (!exists{?s owl:SameAs ?o})
-                }
-                ORDER BY RAND()
-                LIMIT 100`;
+                FILTER (!exists{?s owl:SameAs ?o})}
+                ORDER BY RAND() LIMIT 100`;
 
             $("#req").html(
-                `<h3>Dernière requête effectuée sur ${selectedEndpt} :</h3>
-                <samp>${Query.replaceAll("<", "&lt;").replaceAll(">", "&gt;")}</samp>`
+                `<h3>Dernière requête effectuée sur <b style="color:${coulGroupe(endpointGroups[$("#selectPterm option:selected").text()])};">${selectedEndpt}</b> :</h3>
+                <pre>${Query.replaceAll("<", "&lt;").replaceAll(">", "&gt;")}</pre>`
             );
 
             //Paramétrage et envoi de la requête au point de terminaison (fetch).
@@ -241,7 +243,7 @@
             .append("#lesvg:marker")
             .attr("id", String)
             .attr("viewBox", "0 -5 10 10")
-            .attr("refX", 29)
+            .attr("refX", 33)
             .attr("markerUnits", "userSpaceOnUse")
             .attr("markerWidth", 8)
             .attr("markerHeight", 8)
@@ -778,6 +780,7 @@
             } else { //Si la source n'est pas la BnF, donc si on n'est pas dans l'ontologie LRM,
                 //on renvoie une couleur grise et le dernier élément de l'URI
                 //qui peut être précédé de "/", ".", ou "#"
+                console.log(type);
                 var parts = type.split(/[/.#]/); //Divise le type en fonction de "/", "." ou "#"
                 if (type.endsWith('/')) {
                     return { couleur: "#dddddd", label: parts[parts.length - 2] + "/".replace(/\/$/, ''), type: "nd" }; //Retourne l'avant-dernier élément avec le "/" final retiré
