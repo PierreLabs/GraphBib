@@ -749,7 +749,7 @@
                     return { couleur: "#315fba", label: "Personne", type: "Personne" };
                 }
                 if (type.indexOf("bnf-onto/ExpositionVirtuelle") > -1) { //Exposition
-                    return { couleur: "#d2cafc", label: "Exposition" };
+                    return { couleur: "#d2cafc", label: "Exposition", type: "Exposition" };
                 }
                 if ( //Lieu
                     type.indexOf("/countries") > -1 ||
