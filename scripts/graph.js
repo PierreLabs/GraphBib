@@ -191,7 +191,7 @@
                 ORDER BY RAND() LIMIT 100`;
 
             $("#req").html(
-                `<h3>Dernière requête effectuée sur <b style="color:${coulGroupe(endpointGroups[$("#selectPterm option:selected").text()])};">${selectedEndpt}</b> :</h3>
+                `<h3>Dernière requête effectuée sur <b style="color:${coulGroupe(endpointGroups[selectedEndpt])};">${selectedEndpt}</b> :</h3>
                 <pre>${Query.replaceAll("<", "&lt;").replaceAll(">", "&gt;")}</pre>`
             );
 

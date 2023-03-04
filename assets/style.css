@@ -106,7 +106,3 @@ select option.group1 {
     pointer-events: none;
     line-height: 2rem;
 }
-
-#req b {
-    color: #888;
-}
