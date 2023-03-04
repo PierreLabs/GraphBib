@@ -161,7 +161,7 @@
     function sparqlData(uri) {
         isUpdating = true;
         //Animation du logo (loader)
-        var loader = document.querySelector('.loader-svg');
+        let loader = document.querySelector('.loader-svg');
         loader.style.animationPlayState = 'running';
         //Le point de terminaison sélectionné.
         $("select option:selected").each(function() {
@@ -568,7 +568,7 @@
             svg.call(zoom.transform, transform);
 
             //Une fois le graphe chargé, pause de l'animation du logo (loader)
-            var loader = document.querySelector('.loader-svg');
+            let loader = document.querySelector('.loader-svg');
             loader.style.animationPlayState = 'paused';
             isUpdating = false;
 
@@ -616,7 +616,8 @@
                     .on("end", dragended);
             }
         } else {
-            $(".loader").hide();
+            let loader = document.querySelector('.loader-svg');
+            loader.style.animationPlayState = 'paused';
             isUpdating = false;
         }
 
