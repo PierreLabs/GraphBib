@@ -43,12 +43,17 @@
             transform.k +
             ")"
         );
-    }
+    } //Special:Redirect
 
     //Attribution d'un groupe par point de terminaison (endpoint)
     let endpointGroups = {};
+    //Nombre d'options pour les points de terminaison
+    let nbrOptions = $("#selectPterm").children().length;
+    //Couleurs aléatoires dans le schéma de couleurs
+    let couleursAleatoires = d3.shuffle(d3.schemeCategory10).slice(0, nbrOptions - 1);
     //Schéma de couleurs pour les groupes (points de terminaison)
-    let coulGroupe = d3.scaleOrdinal().domain(Object.keys(endpointGroups)).range(d3.schemeTableau10);
+    let coulGroupe = d3.scaleOrdinal().domain(Object.keys(endpointGroups)).range(couleursAleatoires);
+
     let options = document.querySelectorAll("select option");
     for (let i = 1; i < options.length; i++) {
         let option = options[i];
@@ -150,7 +155,7 @@
         }
     });
 
-    //"écouteur" pour appui sur la touche entrée dans le champ URI
+    //gestionnaire d'événement pour l'appui sur la touche entrée dans le champ URI
     $("#uri").on("keyup", function(event) {
         if (event.keyCode === 13) {
             $("#uri").blur();
@@ -163,6 +168,9 @@
         //Animation du logo (loader)
         let loader = document.querySelector('.loader-svg');
         loader.style.animationPlayState = 'running';
+
+        $("#trplt").html("");
+
         //Le point de terminaison sélectionné.
         $("select option:selected").each(function() {
             selectedEndpt = $(this).text();
@@ -176,17 +184,21 @@
                 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
                 PREFIX dc: <http://purl.org/dc/elements/1.1/>
                 SELECT DISTINCT * WHERE{
-                { <${uri}> ?p2 ?o.                
-                OPTIONAL {?o rdf:type ?type.}
-                OPTIONAL {?o dc:type ?type.}
-                OPTIONAL {<${uri}> rdf:type ?uriType.}
-                OPTIONAL{ ?o foaf:depiction ?depic.}}
+                {
+                    <${uri}> ?p ?o.                
+                    OPTIONAL {?o rdf:type ?type.}
+                    OPTIONAL {?o dc:type ?type.}
+                    OPTIONAL {<${uri}> rdf:type ?uriType.}
+                    OPTIONAL{ ?o foaf:depiction ?depic.}
+                }
                 UNION 
-                { ?s ?p1 <${uri}>.
-                OPTIONAL {?s rdf:type ?type.}
-                OPTIONAL {?s dc:type ?type.}
-                OPTIONAL {<${uri}> rdf:type ?uriType.}
-                OPTIONAL{ ?s foaf:depiction ?depic.}}
+                {
+                    ?s ?p <${uri}>.
+                    OPTIONAL {?s rdf:type ?type.}
+                    OPTIONAL {?s dc:type ?type.}
+                    OPTIONAL {<${uri}> rdf:type ?uriType.}
+                    OPTIONAL{ ?s foaf:depiction ?depic.}
+                }
                 FILTER (!exists{?s owl:SameAs ?o})}
                 ORDER BY RAND() LIMIT 100`;
 
@@ -252,27 +264,15 @@
             .attr("points", "0,-5 10,0 0,5")
             .attr("fill", "#999");
 
-        let triplet = ""; //triplet correspondant pour chaque "statement"
-        $("#trplt").html("");
+        //let triplet = ""; //triplet correspondant pour chaque "statement"
         let c = 0; //Compteur d'itérations
         //Itération des résultats
         response.results.bindings.forEach((element) => {
             //L'URI est utilisé comme objet s'il n'est pas sujet
             //Dans le cas où l'URI est sujet, la valeur par défaut est une chaîne vide
             let sujet = element.hasOwnProperty('s') ? element.s.value : uri;
-            let predicat = element.hasOwnProperty('p1') ? element.p1.value : element.p2.value;
+            let predicat = element.p.value;
             let objet = element.hasOwnProperty('o') ? element.o.value : (sujet === uri ? '' : uri);
-
-            if (element.hasOwnProperty('p1') && element.hasOwnProperty('p2')) {
-                //Les résultats contiennent à la fois p1 et p2, on utilise p1 par défaut, mais on vérifie
-                //s'il existe plusieurs valeurs associées à p1 ou p2 pour le prédicat
-                if (Array.isArray(element.p1)) {
-                    predicat = element.p1[0].value;
-                }
-                if (Array.isArray(element.p2)) {
-                    predicat = element.p2[0].value;
-                }
-            }
 
             let typeO = objet !== uri && typeof element.type !== "undefined" ? element.type.value : objet;
             let typeS = sujet !== uri && typeof element.type !== "undefined" ? element.type.value : sujet;
@@ -282,11 +282,7 @@
 
 
             let bColorS = coulTypeS.couleur;
-            const fColorS = frontColor(bColorS);
             let bColorO = coulTypeO.couleur;
-            const fColorO = frontColor(bColorO);
-
-            triplet = `<span style='background-color:${bColorS}; color: ${fColorS}; border-radius: 10px; padding:5px;'>&lt;${sujet}&gt;</span><br><b>&#x279F;</b> <span style='background-color:#555; color: white; border-radius: 10px; padding:5px;'>&lt;${predicat}&gt;</span><br><b>&#x279F;</b> <span style='background-color:${bColorO}; color: ${fColorO}; border-radius: 10px; padding:5px;'>&lt;${objet}&gt;</span>`;
 
             let stringHtml =
                 `<span style='color:${bColorS}; font-weight:bold;'>&lt;${sujet}&gt;</span> <span style='color:#555'>&lt;${predicat}&gt;</span> <span style='color:${bColorO}; font-weight:bold;'>&lt;${objet}&gt;</span>`;
@@ -304,7 +300,6 @@
                     uri: uri,
                     isLiteral: uriType.indexOf("literal") > -1 ? true : false,
                     pred: predicat,
-                    triplet: triplet,
                     couleur: coulTypeURI.couleur,
                     depic: element.hasOwnProperty("depic") ? element.depic.value : "",
                     group: endpointGroups[endPt]
@@ -320,7 +315,6 @@
                         uri: sujet,
                         isLiteral: element.s.type.indexOf("literal") > -1 ? true : false,
                         pred: predicat,
-                        triplet: triplet,
                         couleur: bColorS,
                         depic: element.hasOwnProperty("depic") ? element.depic.value : "",
                         group: endpointGroups[endPt]
@@ -333,7 +327,6 @@
                         uri: uri,
                         isLiteral: false,
                         pred: predicat,
-                        triplet: triplet,
                         couleur: bColorO,
                         depic: element.hasOwnProperty("depic") ? element.depic.value : "",
                         group: endpointGroups[endPt]
@@ -352,7 +345,6 @@
                         uri: objet,
                         isLiteral: element.o.type.indexOf("literal") > -1 ? true : false,
                         pred: predicat,
-                        triplet: triplet,
                         couleur: bColorO,
                         depic: element.hasOwnProperty("depic") ? element.depic.value : "",
                         group: endpointGroups[endPt]
@@ -365,7 +357,6 @@
                         uri: uri,
                         isLiteral: false,
                         pred: predicat,
-                        triplet: triplet,
                         couleur: bColorS,
                         depic: element.hasOwnProperty("depic") ? element.depic.value : "",
                         group: endpointGroups[endPt]
@@ -380,7 +371,7 @@
             c++
         });
 
-        //"nettoyage"
+        //"nettoyage" des doublons
         let newNodes = supprDoublons(nodes, "uri"); //Tableau des noeuds uniques
         graphObj = {
             nodes: newNodes,
@@ -496,7 +487,7 @@
                     let depiction = decodedUri.length ? `<img src='${decodedUri}' style='float:left; margin-right: 5px;height:70px;' />` : "";
 
                     //div est un cartouche "popup" qui va afficher l'URI de la ressource, son "type",
-                    //une image d'illustration liée s'il y en a une, et le triplet qui lie cette ressource.
+                    //une image d'illustration liée s'il y en a une, et le(s) triplet(s) qui lié(s) à cette ressource.
                     //Des codes couleur correspondants au "type" sont utilisés pour la couleur du texte.
                     div.style("border", "solid 5px" + coulGroupe(d.group));
 
@@ -504,11 +495,19 @@
                         .duration(100)
                         .style("opacity", .95);
 
+                    //Les liens associés au noeud (et suppression des doublons)
+                    let nodeLinks = links.filter(link => link.source === d || link.target === d);
+                    nodelinks = uniques(nodeLinks);
 
-                    div.html(`<div style='background-color:#888; padding:5px; border-radius: 10px; border:1px solid ${d.couleur}; margin-bottom:1em;'>${depiction}
-                    <h6 style='margin-bottom:0.1em; color:${d.couleur};'><b>&lt;${d.uri}</b>&gt;</h6>      <small>(${d.modelType})</small>
-                    </div>
-                    <p>${d.triplet}</p>`)
+
+                    //On stocke le(s) triplet(s) associé(s) dans un tableau
+                    let triplets = [];
+                    nodelinks.forEach(link => {
+                        triplets.push(`<tr><td style="font-weight:bold; color:${link.source.couleur};">&lt;${link.source.uri}&gt;</td><td style="color:#fff;">&lt;${link.value}&gt;</td><td style="font-weight:bold; color:${link.target.couleur};">&lt;${link.target.uri}&gt;</td></tr>`);
+                    });
+
+                    //On concatène les triplets dans la balise HTML qui affiche le cartouche.
+                    div.html(`<div class='cartouche' style='border:1px solid ${d.couleur};'>${depiction}<h6 style='margin-bottom:0.1em; color:${d.couleur};'><b>&lt;${d.uri}</b>&gt;</h6><small>(${d.modelType})</small></div><table style="font-size:10px;">${triplets.join("")}</table>`)
                         .style("left", (event.pageX) + "px")
                         .style("top", (event.pageY - 28) + "px");
                 })
@@ -621,16 +620,26 @@
             isUpdating = false;
         }
 
-        //Fonction pour supprimer les doublons dans un tableau
-        function supprDoublons(myArr, prop) {
-            return myArr.filter((obj, pos, arr) => {
+        //Fonction pour supprimer les doublons dans un tableau (clé <=> valeur)
+        function supprDoublons(array, prop) {
+            return array.filter((obj, pos, arr) => {
                 let arrayMap =
                     arr.map((mapObj) => mapObj[prop]).indexOf(obj[prop]) === pos;
                 return arrayMap;
             });
         }
 
-        //Couleur en fonction du type d'entité.
+        //Fonction qui retourne les valeurs uniques d'un tableau.
+        function uniques(array) {
+            return array.filter((value, index, self) => {
+                return self.findIndex((elem) => {
+                    return elem.source === value.source && elem.target === value.target && elem.value === value.value;
+                }) === index;
+            });
+        }
+
+
+        //Renvoie une couleur en fonction du type d'entité, le label associé (nomen, oemi, etc...) et le type.
         //Les couleurs sont choisies pour être en adéquation avec les choix faits par la Transition Bibliographique
         function getColorType(type, source) {
             if (source.indexOf("bnf") > -1) {
@@ -781,7 +790,6 @@
             } else { //Si la source n'est pas la BnF, donc si on n'est pas dans l'ontologie LRM,
                 //on renvoie une couleur grise et le dernier élément de l'URI
                 //qui peut être précédé de "/", ".", ou "#"
-                console.log(type);
                 var parts = type.split(/[/.#]/); //Divise le type en fonction de "/", "." ou "#"
                 if (type.endsWith('/')) {
                     return { couleur: "#dddddd", label: parts[parts.length - 2] + "/".replace(/\/$/, ''), type: "nd" }; //Retourne l'avant-dernier élément avec le "/" final retiré
