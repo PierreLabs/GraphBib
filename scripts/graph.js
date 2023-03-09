@@ -84,22 +84,28 @@
         }
         if (selectedValue.indexOf("dbpedia") > -1) {
             //Mettre la couleur d'arrière plan (associée au point de terminaison) sur le select.
+            //Cette couleur résulte de l'application d'une opacité de 0.5 sur ses composantes
             const opacite = 0.5;
-            const r = parseInt(coulOption.substring(1, 3), 16);
-            const g = parseInt(coulOption.substring(3, 5), 16);
-            const b = parseInt(coulOption.substring(5, 7), 16);
-            const couleurAvecOpacite = `rgba(${r}, ${g}, ${b}, ${opacite})`;
+            // Calculer la couleur équivalente qui résulte de l'application d'un eopacité
+            const r = Math.round((parseInt(coulOption.substring(1, 3), 16) * opacite) + (255 * (1 - opacite)));
+            const g = Math.round((parseInt(coulOption.substring(3, 5), 16) * opacite) + (255 * (1 - opacite)));
+            const b = Math.round((parseInt(coulOption.substring(5, 7), 16) * opacite) + (255 * (1 - opacite)));
+
+            const couleurAvecOpacite = `rgba(${r}, ${g}, ${b}, 1)`;
             $("#selectPterm").css("background-color", couleurAvecOpacite);
             if (!uriVal.length) //URI "exemple" à utiliser avec dbpedia (J.S. Bach)
                 $("#uri").val("https://fr.dbpedia.org/resource/Jean-Sébastien_Bach")
         }
         if (selectedValue.indexOf("europeana") > -1) {
             //Mettre la couleur d'arrière plan (associée au point de terminaison) sur le select.
+            //Cette couleur résulte de l'application d'une opacité de 0.5 sur ses composantes
             const opacite = 0.5;
-            const r = parseInt(coulOption.substring(1, 3), 16);
-            const g = parseInt(coulOption.substring(3, 5), 16);
-            const b = parseInt(coulOption.substring(5, 7), 16);
-            const couleurAvecOpacite = `rgba(${r}, ${g}, ${b}, ${opacite})`;
+            // Calculer la couleur équivalente qui résulte de l'application d'un eopacité
+            const r = Math.round((parseInt(coulOption.substring(1, 3), 16) * opacite) + (255 * (1 - opacite)));
+            const g = Math.round((parseInt(coulOption.substring(3, 5), 16) * opacite) + (255 * (1 - opacite)));
+            const b = Math.round((parseInt(coulOption.substring(5, 7), 16) * opacite) + (255 * (1 - opacite)));
+
+            const couleurAvecOpacite = `rgba(${r}, ${g}, ${b}, 1)`;
             $("#selectPterm").css("background-color", couleurAvecOpacite);
             if (!uriVal.length) //URI "exemple" à utiliser avec europeana (Pierre Corneille)
                 $("#uri").val("http://dbpedia.org/resource/Pierre_Corneille")
@@ -416,15 +422,14 @@
                     } else {
                         //Sinon, on met la couleur du groupe (endpoint) à 50% et on renvoie cette couleur
                         const couleur = coulGroupe(d.group);
+                        //Cette couleur résulte de l'application d'une opacité de 0.5 sur ses composantes
                         const opacite = 0.5;
+                        // Calculer la couleur équivalente qui résulte de l'application d'un eopacité
+                        const r = Math.round((parseInt(couleur.substring(1, 3), 16) * opacite) + (255 * (1 - opacite)));
+                        const g = Math.round((parseInt(couleur.substring(3, 5), 16) * opacite) + (255 * (1 - opacite)));
+                        const b = Math.round((parseInt(couleur.substring(5, 7), 16) * opacite) + (255 * (1 - opacite)));
 
-                        // Convertir la valeur hexadécimale en valeurs RVB
-                        const r = parseInt(couleur.substring(1, 3), 16);
-                        const g = parseInt(couleur.substring(3, 5), 16);
-                        const b = parseInt(couleur.substring(5, 7), 16);
-
-                        // Renvoyer la couleur avec une opacité de 0.5
-                        const couleurAvecOpacite = `rgba(${r}, ${g}, ${b}, ${opacite})`;
+                        const couleurAvecOpacite = `rgba(${r}, ${g}, ${b}, 1)`;
                         return couleurAvecOpacite;
                     }
                 })
