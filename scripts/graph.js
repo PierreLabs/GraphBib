@@ -84,28 +84,14 @@
         }
         if (selectedValue.indexOf("dbpedia") > -1) {
             //Mettre la couleur d'arrière plan (associée au point de terminaison) sur le select.
-            //Cette couleur résulte de l'application d'une opacité de 0.5 sur ses composantes
-            const opacite = 0.5;
-            // Calculer la couleur équivalente qui résulte de l'application d'un eopacité
-            const r = Math.round((parseInt(coulOption.substring(1, 3), 16) * opacite) + (255 * (1 - opacite)));
-            const g = Math.round((parseInt(coulOption.substring(3, 5), 16) * opacite) + (255 * (1 - opacite)));
-            const b = Math.round((parseInt(coulOption.substring(5, 7), 16) * opacite) + (255 * (1 - opacite)));
-
-            const couleurAvecOpacite = `rgba(${r}, ${g}, ${b}, 1)`;
+            const couleurAvecOpacite = opaciteResult(coulOption);
             $("#selectPterm").css("background-color", couleurAvecOpacite);
             if (!uriVal.length) //URI "exemple" à utiliser avec dbpedia (J.S. Bach)
                 $("#uri").val("https://fr.dbpedia.org/resource/Jean-Sébastien_Bach")
         }
         if (selectedValue.indexOf("europeana") > -1) {
             //Mettre la couleur d'arrière plan (associée au point de terminaison) sur le select.
-            //Cette couleur résulte de l'application d'une opacité de 0.5 sur ses composantes
-            const opacite = 0.5;
-            // Calculer la couleur équivalente qui résulte de l'application d'un eopacité
-            const r = Math.round((parseInt(coulOption.substring(1, 3), 16) * opacite) + (255 * (1 - opacite)));
-            const g = Math.round((parseInt(coulOption.substring(3, 5), 16) * opacite) + (255 * (1 - opacite)));
-            const b = Math.round((parseInt(coulOption.substring(5, 7), 16) * opacite) + (255 * (1 - opacite)));
-
-            const couleurAvecOpacite = `rgba(${r}, ${g}, ${b}, 1)`;
+            const couleurAvecOpacite = opaciteResult(coulOption);
             $("#selectPterm").css("background-color", couleurAvecOpacite);
             if (!uriVal.length) //URI "exemple" à utiliser avec europeana (Pierre Corneille)
                 $("#uri").val("http://dbpedia.org/resource/Pierre_Corneille")
@@ -168,6 +154,19 @@
             $("#envoi").click();
         }
     });
+
+    //fonction qui va renvoyer une couleur résultante de l'application
+    //d'une opcité sur la couleur (sur un fond blanc).
+    function opaciteResult(couleur) {
+        const opacite = 0.1;
+        //Calculer la couleur équivalente qui résulte de l'application de l'opacité sur chacune des couleurs primaires
+        const r = Math.round((parseInt(couleur.substring(1, 3), 16) * opacite) + (255 * (1 - opacite)));
+        const v = Math.round((parseInt(couleur.substring(3, 5), 16) * opacite) + (255 * (1 - opacite)));
+        const b = Math.round((parseInt(couleur.substring(5, 7), 16) * opacite) + (255 * (1 - opacite)));
+
+        //On renvoie la couleur résultante (avec une opacité de 1)
+        return couleurAvecOpacite = `rgba(${r}, ${v}, ${b}, 1)`;
+    }
 
     function sparqlData(uri) {
         isUpdating = true;
@@ -423,14 +422,7 @@
                         //Sinon, on met la couleur du groupe (endpoint) à 50% et on renvoie cette couleur
                         const couleur = coulGroupe(d.group);
                         //Cette couleur résulte de l'application d'une opacité de 0.5 sur ses composantes
-                        const opacite = 0.5;
-                        // Calculer la couleur équivalente qui résulte de l'application d'un eopacité
-                        const r = Math.round((parseInt(couleur.substring(1, 3), 16) * opacite) + (255 * (1 - opacite)));
-                        const g = Math.round((parseInt(couleur.substring(3, 5), 16) * opacite) + (255 * (1 - opacite)));
-                        const b = Math.round((parseInt(couleur.substring(5, 7), 16) * opacite) + (255 * (1 - opacite)));
-
-                        const couleurAvecOpacite = `rgba(${r}, ${g}, ${b}, 1)`;
-                        return couleurAvecOpacite;
+                        return opaciteResult(couleur);
                     }
                 })
                 .attr("pointer-events", "all")
@@ -802,7 +794,6 @@
                     return { couleur: "#dddddd", label: parts[parts.length - 1], type: "nd" }; //Retourne le dernier élément de la liste résultante
                 }
             }
-
         }
 
         //Fonction renvoyant une couleur adéquate pour le texte (noir ou blanc) en fonction de la couleur d'arrière plan afin d'obtenir un contraste suffisant.
