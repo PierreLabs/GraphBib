@@ -58,6 +58,8 @@
     for (let i = 1; i < options.length; i++) {
         let option = options[i];
         if (option.value != "") {
+            //Attribution d'une lettre (A-Z) pour chaque point de terminaison (option du select)
+            //ce qui permet d'injecter des points de terminaison directement dans le code HTML.
             endpointGroups[option.value] = String.fromCharCode(65 + i);
             let coulOption = coulGroupe(endpointGroups[option.value]);
             option.style.color = coulOption; //La couleur associée au point de terminaison sélectionné.

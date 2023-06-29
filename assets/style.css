@@ -112,6 +112,8 @@ select option.group1 {
     color: #fff;
     pointer-events: none;
     line-height: 2rem;
+    overflow: auto;
+    max-height: 600px;
 }
 
 div.cartouche {
