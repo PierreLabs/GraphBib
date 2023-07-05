@@ -458,9 +458,9 @@
                         let fontSize = taillePolice(literal, 12);
                         return `<tspan text-anchor="middle" dominant-baseline="central" font-size="${fontSize}">${literal}</tspan>`
                     } else {
-                        let type = d.label;
-                        let fontSize = taillePolice(type, 12);
-                        return `<tspan text-anchor="middle" dominant-baseline="central" font-size="${fontSize}">${type}</tspan>`
+                        let literal = troncatureLabel(d.uri.substring(d.uri.lastIndexOf("/") + 1), 80, 18);
+                        let fontSize = taillePolice(literal, 12);
+                        return `<tspan text-anchor="middle" dominant-baseline="central" font-size="${fontSize}">${literal}</tspan>`
                     }
                 })
                 .style("fill", "rgb(51, 51, 51)")
