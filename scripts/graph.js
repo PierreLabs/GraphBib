@@ -192,7 +192,8 @@
                 PREFIX dc: <http://purl.org/dc/elements/1.1/>
                 SELECT DISTINCT * WHERE{
                 {
-                    <${uri}> ?p ?o.                
+                    <${uri}> ?p ?o.
+                    FILTER (?p != <http://dbpedia.org/ontology/wikiPageWikiLink>)                
                     OPTIONAL {?o rdf:type ?type.}
                     OPTIONAL {?o dc:type ?type.}
                     OPTIONAL {<${uri}> rdf:type ?uriType.}
@@ -201,6 +202,7 @@
                 UNION 
                 {
                     ?s ?p <${uri}>.
+                    FILTER (?p != <http://dbpedia.org/ontology/wikiPageWikiLink>)
                     OPTIONAL {?s rdf:type ?type.}
                     OPTIONAL {?s dc:type ?type.}
                     OPTIONAL {<${uri}> rdf:type ?uriType.}
